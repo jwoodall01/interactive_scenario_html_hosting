@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Activity #1</title>
+  <style>
+    :root {
+      --accent: #2b6cb0;
+      --border: #ddd;
+      --bg: #ffffff;
+      --muted: #fafafa;
+      --text: #111;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      padding: 16px 20px 8px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0.3px;
+    }
+    header p { margin: 0; opacity: 0.75; font-size: 14px; }
+    .content {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .frame {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: none;
+      background: #fff;
+    }
+    .frame.active { display: block; }
+
+    /* ✅ MODIFIED: Tabs container */
+    .tabs {
+      position: sticky;
+      bottom: 0;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0;
+      overflow-x: hidden; /* changed from auto */
+    }
+
+    /* ✅ MODIFIED: Individual tab styling */
+    .tab {
+      appearance: none;
+      border: 0;
+      background: var(--muted);
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border-right: 1px solid var(--border);
+      transition: background 0.15s ease, color 0.15s ease, border-top-color 0.15s ease;
+      flex: 1 1 0; /* added for equal width */
+      text-align: center; /* added for centered text */
+    }
+    .tab:last-child { border-right: 0; }
+    .tab[aria-selected="true"] {
+      background: var(--bg);
+      color: var(--accent);
+      border-bottom: 2px solid var(--accent); /* changed from border-top */
+    }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 18px; }
+      .tab { font-size: 14px; padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Activity #1</h1>
+    <p>Use the tabs to switch between scenarios/plots.</p>
+  </header>
+
+  <main class="content" role="region" aria-label="Scenario content">
+    <iframe id="scenario_1a" class="frame"
+            data-base="https://jwoodall01.github.io/interactive_scenario_html_hosting.github.io/scenario1A_act1/"
+            title="Scenario #1A" allow="fullscreen"></iframe>
+
+    <iframe id="scenario_1b" class="frame"
+            data-base="https://jwoodall01.github.io/interactive_scenario_html_hosting.github.io/scenario1B_act1/"
+            title="Scenario #1B" allow="fullscreen"></iframe>
+
+    <iframe id="scenario_2a" class="frame"
+            data-base="https://jwoodall01.github.io/interactive_scenario_html_hosting.github.io/scenario2A_act1/"
+            title="Scenario #2A" allow="fullscreen"></iframe>
+
+    <iframe id="scenario_2b" class="frame"
+            data-base="https://jwoodall01.github.io/interactive_scenario_html_hosting.github.io/scenario2B_act1/"
+            title="Scenario #2B" allow="fullscreen"></iframe>
+  </main>
+
+  <nav class="tabs" role="tablist" aria-label="Scenarios">
+    <button class="tab" role="tab" aria-controls="scenario_1a" aria-selected="true">Scenario #1A</button>
+    <button class="tab" role="tab" aria-controls="scenario_1b" aria-selected="false">Scenario #1B</button>
+    <button class="tab" role="tab" aria-controls="scenario_2a" aria-selected="false">Scenario #2A</button>
+    <button class="tab" role="tab" aria-controls="scenario_2b" aria-selected="false">Scenario #2B</button>
+  </nav>
+
+  <script>
+    (function () {
+      const tabs = Array.from(document.querySelectorAll(".tab"));
+      const frames = Array.from(document.querySelectorAll(".frame"));
+
+      function buildUrl(base, tabId) {
+        const hasQuery = base.indexOf("?") !== -1;
+        const sep = hasQuery ? "&" : "?";
+        const ts = Date.now();
+        return base + sep + "_tab=" + encodeURIComponent(tabId) + "&_ts=" + ts;
+      }
+
+      function activate(id, force = true) {
+        frames.forEach(f => {
+          const isTarget = f.id === id;
+          f.classList.toggle("active", isTarget);
+          if (isTarget && force) {
+            const base = f.getAttribute("data-base");
+            if (base) {
+              f.src = buildUrl(base, id);
+            }
+          }
+        });
+        tabs.forEach(t => t.setAttribute("aria-selected", t.getAttribute("aria-controls") === id));
+        try { history.replaceState(null, "", "#" + id); } catch (e) {}
+      }
+
+      tabs.forEach(t => t.addEventListener("click", () => activate(t.getAttribute("aria-controls"), true)));
+
+      const hash = (location.hash || "").replace("#", "");
+      const initialId = (hash && document.getElementById(hash)) ? hash : (tabs[0] && tabs[0].getAttribute("aria-controls"));
+      if (initialId) activate(initialId, true);
+    })();
+  </script>
+</body>
+</html>
